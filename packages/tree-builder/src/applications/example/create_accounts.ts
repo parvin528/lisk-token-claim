@@ -1,12 +1,10 @@
 import * as fs from 'fs';
 import { address } from '@liskhq/lisk-cryptography';
-import { ExampleKey } from '../../interface';
+import { Account, ExampleKey } from '../../interface';
+import { randomBalanceBeddows } from '../../utils';
 
-// 1 LSK = 10^8 Beddows
-const LSK_MULTIPLIER = 10 ** 8;
-
-// Balances are random between 0 - <RANDOM_RANGE>
-const RANDOM_RANGE = 10000;
+// Random Balance in Beddows between 0 - 2 ** (8 * RANDOM_BYTES_RANGE)
+const RANDOM_BYTES_RANGE = 5;
 
 // Multisig Accounts
 // For each account it will use the address of the index as account holder,
@@ -41,8 +39,6 @@ const multiSigs = [
 	},
 ];
 
-const randomBalance = (range: number): number => Number((range * Math.random()).toFixed(8));
-
 export function createAccounts(numberOfAccounts = 54) {
 	const keyPairs = JSON.parse(
 		fs.readFileSync('../../data/example/key-pairs.json', 'utf-8'),
@@ -55,36 +51,25 @@ export function createAccounts(numberOfAccounts = 54) {
 			.compare(address.getAddressFromLisk32Address(key2.address)),
 	);
 
-	const results: {
-		lskAddress: string;
-		balance: number;
-		balanceBeddows: number;
-		numberOfSignatures?: number;
-		mandatoryKeys?: string[];
-		optionalKeys?: string[];
-	}[] = [];
+	const results: Account[] = [];
 
 	// Regular Accounts
 	for (let index = 0; index < numberOfAccounts - multiSigs.length; index++) {
 		const account = sortedKeyPairs[index];
-		const balance = randomBalance(RANDOM_RANGE);
-		const balanceBeddows = Math.round(balance * LSK_MULTIPLIER);
+		const balanceBeddows = randomBalanceBeddows(RANDOM_BYTES_RANGE);
 
 		results.push({
 			lskAddress: account.address,
-			balance,
-			balanceBeddows,
+			balanceBeddows: balanceBeddows.toString(),
 		});
 	}
 
 	for (const multiSig of multiSigs) {
 		const account = sortedKeyPairs[results.length];
-		const balance = randomBalance(RANDOM_RANGE);
-		const balanceBeddows = Math.round(balance * LSK_MULTIPLIER);
+		const balanceBeddows = randomBalanceBeddows(RANDOM_BYTES_RANGE);
 
 		results.push({
 			lskAddress: account.address,
-			balance,
 			balanceBeddows,
 			numberOfSignatures: multiSig.numberOfSignatures,
 			mandatoryKeys: [...Array(multiSig.numberOfMandatoryKeys).keys()].map(

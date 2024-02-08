@@ -4,20 +4,7 @@ import { ux } from '@oclif/core';
 import { Account } from '../../interface';
 import { buildTree } from './build_tree';
 
-export function buildTreeJson(outputPath: string) {
-	let accounts: Account[];
-
-	const accountsPath = path.join(outputPath, 'accounts.json');
-	try {
-		accounts = JSON.parse(fs.readFileSync(accountsPath, 'utf-8')) as Account[];
-	} catch (err) {
-		ux.log(`Error occurred reading ${accountsPath}`);
-		if (err instanceof Error) {
-			ux.log(err.message);
-		}
-		process.exit(1);
-	}
-
+export async function buildTreeJson(outputPath: string, accounts: Account[]) {
 	const { tree, leaves } = buildTree(accounts);
 
 	const merkleTreeResultDetailedJSONPath = path.join(

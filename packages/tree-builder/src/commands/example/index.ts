@@ -1,8 +1,11 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { Flags, Command } from '@oclif/core';
 import { createAccounts } from '../../applications/example/create_accounts';
 import { signAccounts } from '../../applications/example/sign_accounts';
 import { buildTreeJson } from '../../applications/generate-merkle-tree/build_tree_json';
 import { createKeyPairs } from '../../applications/example/create_key_pairs';
+import { Account } from '../../interface';
 
 export default class Example extends Command {
 	static flags = {
@@ -25,6 +28,7 @@ export default class Example extends Command {
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Example);
+		const exampleDataPath = '../../data/example';
 
 		// Create key-pairs.json
 		await createKeyPairs(flags.amountOfLeaves);
@@ -32,8 +36,13 @@ export default class Example extends Command {
 		// Create Accounts using key-pairs.json with random balances
 		createAccounts(flags.amountOfLeaves);
 
+		const accountPath = path.join(exampleDataPath, 'accounts.json');
+		this.log('Sample accounts outputted to:', accountPath);
+
+		const accounts = JSON.parse(fs.readFileSync(accountPath, 'utf-8')) as Account[];
+
 		// Build MerkleTree to example
-		buildTreeJson('../../data/example');
+		await buildTreeJson(exampleDataPath, accounts);
 
 		// Sign all leaves using key-pairs.json
 		signAccounts(flags.recipient);

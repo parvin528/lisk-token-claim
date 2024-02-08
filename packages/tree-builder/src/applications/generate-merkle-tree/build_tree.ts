@@ -7,7 +7,7 @@ import { append0x } from '../../utils';
 
 export function createPayload(account: Account) {
 	return [
-		address.getAddressFromLisk32Address(account.lskAddress),
+		append0x(address.getAddressFromLisk32Address(account.lskAddress)),
 		account.balanceBeddows,
 		account.numberOfSignatures ?? 0,
 		account.mandatoryKeys ? account.mandatoryKeys.map(key => append0x(key)) : [],
@@ -16,7 +16,7 @@ export function createPayload(account: Account) {
 }
 
 export function buildTree(accounts: Account[]): {
-	tree: StandardMerkleTree<(number | Buffer | string[])[]>;
+	tree: StandardMerkleTree<(string | number | Buffer | string[])[]>;
 	leaves: Leaf[];
 } {
 	// Check that addresses are sorted
@@ -51,7 +51,6 @@ export function buildTree(accounts: Account[]): {
 		leaves.push({
 			lskAddress: account.lskAddress,
 			address: append0x(addressHex.toString('hex')),
-			balance: account.balance,
 			balanceBeddows: account.balanceBeddows,
 			numberOfSignatures: account.numberOfSignatures ?? 0,
 			mandatoryKeys: account.mandatoryKeys
