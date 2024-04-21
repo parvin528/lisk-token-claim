@@ -3,9 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { JSONRPCServer } from 'json-rpc-2.0';
 import { DB } from './db';
-import { loadMerkleTree } from './utils/leaf-map';
+import { loadAirdropMerkleTree, loadMerkleTree } from './utils/leaf-map';
 import { submitMultisig } from './controllers/submit-multisig';
 import { checkEligibility } from './controllers/check-eligibility';
+import { checkAirdropEligibility } from './controllers/check-airdrop-eligibility';
 dotenv.config();
 
 const HOST = process.env.BACKEND_HOST || '127.0.0.1';
@@ -17,6 +18,7 @@ const corsOptions = {
 
 void (async () => {
 	loadMerkleTree();
+	loadAirdropMerkleTree();
 	const app: Express = express();
 	const server = new JSONRPCServer();
 
@@ -25,6 +27,7 @@ void (async () => {
 	app.use(express.urlencoded({ extended: true }));
 
 	server.addMethod('checkEligibility', checkEligibility);
+	server.addMethod('checkAirdropEligibility', checkAirdropEligibility);
 	server.addMethod('submitMultisig', submitMultisig);
 
 	// For Health Check from VPS monitoring
